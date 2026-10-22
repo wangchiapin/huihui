@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>輔導牌卡</title>
+<style>
+  :root{
+    --bg:#E6DECF;
+    --card:#F7F2E8;
+    --ink:#2A2622;
+    --sub:#6B6256;
+    --line:#8C8272;
+    --btn:#3B352E;
+    --btn-ink:#F7F2E8;
+    --soft:#D9CFBC;
+    --sel:#3B352E;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html{font-size:17px}
+  body.big{font-size:130%}
+  body{
+    margin:0;background:var(--bg);color:var(--ink);
+    font-family:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+    line-height:1.7;
+  }
+  header{
+    display:flex;justify-content:space-between;align-items:center;
+    padding:14px 18px 6px;
+  }
+  header h1{font-size:1.15rem;margin:0;letter-spacing:.15em;font-weight:600}
+  .toggle{
+    border:1px solid var(--line);background:transparent;color:var(--ink);
+    border-radius:999px;padding:4px 12px;font-size:.8rem;cursor:pointer;
+  }
+  .toggle.on{background:var(--btn);color:var(--btn-ink)}
+  nav{
+    display:flex;gap:0;margin:8px 18px 0;border:1px solid var(--line);
+    border-radius:10px;overflow:hidden;background:var(--soft);
+  }
+  nav button{
+    flex:1;padding:11px 4px;border:0;background:transparent;color:var(--ink);
+    font-size:.95rem;cursor:pointer;font-family:inherit;
+  }
+  nav button+button{border-left:1px solid var(--line)}
+  nav button.active{background:var(--btn);color:var(--btn-ink)}
+  main{max-width:760px;margin:0 auto;padding:16px 18px 60px}
+  .panel{display:none}
+  .panel.active{display:block}
+  .hint{color:var(--sub);font-size:.85rem;margin:4px 0 14px}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+  .chip{
+    border:1px solid var(--line);background:transparent;color:var(--ink);
+    border-radius:999px;padding:5px 14px;font-size:.88rem;cursor:pointer;font-family:inherit;
+  }
+  .chip.on{background:var(--btn);color:var(--btn-ink);border-color:var(--btn)}
+  .stage{
+    background:var(--card);border:2px solid var(--ink);border-radius:14px;
+    min-height:260px;padding:26px 22px;display:flex;flex-direction:column;
+    justify-content:center;position:relative;
+    box-shadow:4px 4px 0 var(--line);
+  }
+  .stage .tag{
+    position:absolute;top:12px;left:16px;font-size:.78rem;color:var(--sub);
+    letter-spacing:.1em;border-bottom:1px solid var(--line);padding-bottom:1px;
+  }
+  .stage .text{font-size:1.4rem;line-height:1.8;font-weight:500;text-align:center;margin:18px 0 8px}
+  .stage .ask{
+    margin-top:14px;padding-top:12px;border-top:1px dashed var(--line);
+    color:var(--sub);font-size:.95rem;text-align:center;
+  }
+  .stage.empty .text{color:var(--sub);font-size:1.05rem;font-weight:400}
+  .flip{animation:flip .35s ease}
+  @keyframes flip{from{transform:rotateY(90deg);opacity:.2}to{transform:rotateY(0);opacity:1}}
+  .actions{display:flex;gap:10px;margin-top:18px}
+  .btn{
+    flex:1;padding:13px 10px;border-radius:10px;border:2px solid var(--btn);
+    background:var(--btn);color:var(--btn-ink);font-size:1.02rem;cursor:pointer;
+    font-family:inherit;letter-spacing:.1em;
+  }
+  .btn.ghost{background:transparent;color:var(--btn)}
+  .btn:active{transform:translateY(1px)}
+  .count{text-align:center;color:var(--sub);font-size:.82rem;margin-top:12px}
+
+  /* values */
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:10px}
+  .vcard{
+    position:relative;background:var(--card);border:1.5px solid var(--line);border-radius:10px;
+    padding:16px 6px 12px;text-align:center;cursor:pointer;font-family:inherit;color:var(--ink);
+    font-size:1.05rem;min-height:84px;
+  }
+  .vcard small{display:block;color:var(--sub);font-size:.72rem;margin-top:3px;line-height:1.4}
+  .vcard.sel{background:var(--sel);color:var(--btn-ink);border-color:var(--sel)}
+  .vcard.sel small{color:#CFC5B2}
+  .vcard .no{
+    position:absolute;top:-9px;right:-7px;background:var(--card);color:var(--ink);
+    border:2px solid var(--ink);border-radius:50%;width:26px;height:26px;
+    font-size:.85rem;line-height:22px;font-weight:700;display:none;
+  }
+  .vcard.sel .no{display:block}
+  .status{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+  .status .num{font-size:1.05rem}
+  .result{
+    margin-top:22px;background:var(--card);border:2px solid var(--ink);border-radius:14px;
+    padding:18px 20px;box-shadow:4px 4px 0 var(--line);display:none;
+  }
+  .result.show{display:block}
+  .result h3{margin:0 0 10px;font-size:1.05rem;letter-spacing:.1em}
+  .result ol{margin:0 0 12px;padding-left:1.4em;font-size:1.15rem}
+  .result ul{margin:0;padding-left:1.2em;color:var(--sub);font-size:.93rem}
+  footer{text-align:center;color:var(--sub);font-size:.75rem;padding:0 18px 30px}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>輔導牌卡</h1>
+  <button class="toggle" id="bigBtn">投影模式</button>
+</header>
+
+<nav id="tabs">
+  <button data-p="scene" class="active">情境抽卡</button>
+  <button data-p="sent">接句子</button>
+  <button data-p="value">價值觀排序</button>
+</nav>
+
+<main>
+
+  <!-- 情境抽卡 -->
+  <section class="panel active" id="scene">
+    <p class="hint">抽一張情境，一起聊聊「如果是你，會怎麼做？」沒有標準答案。</p>
+    <div class="chips" id="sceneChips"></div>
+    <div class="stage empty" id="sceneStage">
+      <div class="text">按下「抽一張」開始</div>
+    </div>
+    <div class="actions">
+      <button class="btn" id="sceneDraw">抽一張</button>
+    </div>
+    <div class="count" id="sceneCount"></div>
+  </section>
+
+  <!-- 接句子 -->
+  <section class="panel" id="sent">
+    <p class="hint">抽到一句話，接著說完。不想說的可以「換一張」，沒有人會被勉強。</p>
+    <div class="chips" id="sentChips"></div>
+    <div class="stage empty" id="sentStage">
+      <div class="text">按下「抽一張」開始</div>
+    </div>
+    <div class="actions">
+      <button class="btn" id="sentDraw">抽一張</button>
+    </div>
+    <div class="count" id="sentCount"></div>
+  </section>
+
+  <!-- 價值觀排序 -->
+  <section class="panel" id="value">
+    <p class="hint">從下面 20 張卡裡，選出對你「現在」最重要的 5 張。依照點選的順序，第一張就是第 1 名。再點一次可以取消。</p>
+    <div class="status">
+      <span class="num" id="valNum">已選 0 / 5</span>
+      <button class="chip" id="valReset">全部重來</button>
+    </div>
+    <div class="grid" id="valGrid"></div>
+    <div class="result" id="valResult">
+      <h3>我現在最重視的 5 件事</h3>
+      <ol id="valList"></ol>
+      <ul>
+        <li>為什麼第 1 名排在最前面？</li>
+        <li>有沒有哪一張，你本來想選但最後放掉了？</li>
+        <li>目前的生活，有照顧到你排前面的這幾項嗎？</li>
+      </ul>
+    </div>
+  </section>
+
+</main>
+
+<footer>本頁不會儲存或上傳任何內容，關掉頁面就沒有了。</footer>
+
+<script>
+(function(){
+  /* ===== 資料 ===== */
+  var SCENES = [
+    {c:"人際",t:"好朋友最近一直找別人玩，好像不太想理你。"},
+    {c:"人際",t:"小組報告只有你一個人在做，其他人都說「你比較厲害，交給你」。"},
+    {c:"人際",t:"朋友借了你的東西一直沒還，你又不好意思開口。"},
+    {c:"人際",t:"班上有人被排擠，你看到了，但你也怕被牽連。"},
+    {c:"人際",t:"室友（或同學）的生活習慣讓你很困擾，但他沒有惡意。"},
+    {c:"感情",t:"喜歡一個人，但不知道要不要告白。"},
+    {c:"感情",t:"男（女）朋友希望你隨時回訊息，你覺得有點喘不過氣。"},
+    {c:"感情",t:"好朋友喜歡的人，剛好也對你有好感。"},
+    {c:"手機網路",t:"有人把你的照片或訊息截圖，傳到別人的群組裡。"},
+    {c:"手機網路",t:"你發現自己每天滑手機到半夜，隔天總是爬不起來。"},
+    {c:"手機網路",t:"網路上認識的人，要你傳私密照片或給他帳號密碼。"},
+    {c:"手機網路",t:"看到別人的限時動態，覺得大家都過得比自己好。"},
+    {c:"升學生涯",t:"你想念的科系，和家人希望你念的不一樣。"},
+    {c:"升學生涯",t:"你不知道自己喜歡什麼，但大家都已經在準備了。"},
+    {c:"升學生涯",t:"段考考得很差，你不敢讓爸媽知道。"},
+    {c:"升學生涯",t:"實習或打工很累，你開始想放棄，但又怕被說沒毅力。"},
+    {c:"升學生涯",t:"你很努力了，但成績還是追不上別人。"},
+    {c:"家庭",t:"爸媽又在吵架，你不知道該待在房間還是出去。"},
+    {c:"家庭",t:"家人總是拿你和別人比較。"},
+    {c:"家庭",t:"家裡希望你週末幫忙，但你有很想參加的活動。"},
+    {c:"情緒壓力",t:"最近常常覺得很煩、很累，但說不出是為什麼。"},
+    {c:"情緒壓力",t:"你很想跟某個人說心事，又怕對方覺得你很麻煩。"},
+    {c:"情緒壓力",t:"你的朋友最近看起來很低落，還說了一些讓你擔心的話。"},
+    {c:"情緒壓力",t:"明明沒做錯事，卻一直忍不住自責。"},
+    {c:"校園生活",t:"老師當著全班的面糾正你，你覺得很丟臉。"},
+    {c:"校園生活",t:"你看到同學考試作弊，而且是你的好朋友。"},
+    {c:"校園生活",t:"你被選為幹部，但你其實不太想做。"},
+    {c:"校園生活",t:"社團學長姐的要求越來越多，你開始不想去了。"}
+  ];
+  var FOLLOW = [
+    "如果是你，你會怎麼做？為什麼？",
+    "如果這是你的好朋友遇到的，你會給他什麼建議？",
+    "這件事裡面，最困難的地方是什麼？",
+    "除了第一個想到的做法，還有別的選擇嗎？",
+    "這個時候，可以找誰幫忙？",
+    "你覺得當事人現在心裡是什麼感覺？"
+  ];
+  var SCENE_CATS = ["全部","人際","感情","手機網路","升學生涯","家庭","情緒壓力","校園生活"];
+
+  var SENTS = [
+    {l:1,t:"最近讓我覺得開心的一件小事是……"},
+    {l:1,t:"我最喜歡放學後……"},
+    {l:1,t:"如果可以放一天假，我想……"},
+    {l:1,t:"讓我覺得放鬆的方式是……"},
+    {l:1,t:"我很擅長……"},
+    {l:1,t:"我希望別人對我的第一印象是……"},
+    {l:1,t:"我最近在追的（歌、劇、遊戲）是……，因為……"},
+    {l:2,t:"最近讓我壓力最大的是……"},
+    {l:2,t:"我最想改變自己的一件事是……"},
+    {l:2,t:"心情不好的時候，我通常會……"},
+    {l:2,t:"我跟朋友相處時，最在意的是……"},
+    {l:2,t:"我希望老師知道……"},
+    {l:2,t:"別人常常誤會我的地方是……"},
+    {l:2,t:"我對未來最期待的是……"},
+    {l:2,t:"我對未來最擔心的是……"},
+    {l:2,t:"如果有人願意聽我說，我最想說的是……"},
+    {l:3,t:"我最需要被理解的是……"},
+    {l:3,t:"我很難對別人說出口的是……"},
+    {l:3,t:"我常常覺得自己不夠……"},
+    {l:3,t:"當我覺得撐不住的時候，我希望有人……"},
+    {l:3,t:"我曾經很辛苦，但我撐過來了，那時候……"},
+    {l:3,t:"在家裡，我最想被家人看見的是……"},
+    {l:3,t:"如果可以對一年前的自己說一句話，我會說……"}
+  ];
+  var SENT_CATS = [
+    {k:0,n:"全部"},{k:1,n:"輕鬆暖身"},{k:2,n:"一般"},{k:3,n:"比較深入"}
+  ];
+
+  var VALUES = [
+    ["自由","想做什麼自己決定"],["健康","身體與心理都好"],["成績","學業表現"],
+    ["朋友","有人陪、有人懂"],["家人","與家人的關係"],["金錢","經濟穩定"],
+    ["愛情","親密的關係"],["夢想","做自己想做的事"],["安全感","穩定、不擔心"],
+    ["被尊重","別人認真看待我"],["誠實","對人對己都真實"],["成就感","做到、做好一件事"],
+    ["休閒","有時間放鬆玩樂"],["幫助別人","對別人有貢獻"],["獨處","有自己的空間"],
+    ["外表","喜歡自己的樣子"],["名聲","被別人認可、羨慕"],["挑戰","嘗試新的事物"],
+    ["平靜","內心不被打擾"],["歸屬感","有自己的團體"]
+  ];
+
+  /* ===== 共用 ===== */
+  function shuffle(a){
+    a=a.slice();
+    for(var i=a.length-1;i>0;i--){
+      var j=Math.floor(Math.random()*(i+1));
+      var t=a[i];a[i]=a[j];a[j]=t;
+    }
+    return a;
+  }
+  function $(id){return document.getElementById(id)}
+
+  /* 分頁 */
+  var tabs=document.querySelectorAll("#tabs button");
+  tabs.forEach(function(b){
+    b.addEventListener("click",function(){
+      tabs.forEach(function(x){x.classList.remove("active")});
+      b.classList.add("active");
+      document.querySelectorAll(".panel").forEach(function(p){p.classList.remove("active")});
+      $(b.dataset.p).classList.add("active");
+    });
+  });
+
+  /* 投影模式 */
+  $("bigBtn").addEventListener("click",function(){
+    document.body.classList.toggle("big");
+    this.classList.toggle("on");
+  });
+
+  /* ===== 抽牌引擎 ===== */
+  function makeDeck(opts){
+    var deck=[],pos=0,filter=null,remain=$(opts.countEl);
+    function rebuild(){
+      deck=shuffle(opts.all.filter(function(x){return opts.match(x,filter)}));
+      pos=0;
+    }
+    function updateCount(){
+      remain.textContent="這一輪還剩 "+(deck.length-pos)+" 張（共 "+deck.length+" 張，抽完會自動重洗）";
+    }
+    function draw(){
+      if(pos>=deck.length) rebuild();
+      var item=deck[pos++];
+      var st=$(opts.stage);
+      st.classList.remove("empty","flip");
+      void st.offsetWidth;
+      st.innerHTML=opts.render(item);
+      st.classList.add("flip");
+      updateCount();
+    }
+    function setFilter(f){
+      filter=f;rebuild();
+      var st=$(opts.stage);
+      st.className="stage empty";
+      st.innerHTML='<div class="text">按下「抽一張」開始</div>';
+      updateCount();
+    }
+    $(opts.btn).addEventListener("click",draw);
+    var box=$(opts.chips);
+    opts.cats.forEach(function(c,i){
+      var b=document.createElement("button");
+      b.className="chip"+(i===0?" on":"");
+      b.textContent=c.label;
+      b.addEventListener("click",function(){
+        box.querySelectorAll(".chip").forEach(function(x){x.classList.remove("on")});
+        b.classList.add("on");
+        setFilter(c.value);
+      });
+      box.appendChild(b);
+    });
+    setFilter(opts.cats[0].value);
+  }
+
+  makeDeck({
+    all:SCENES,stage:"sceneStage",btn:"sceneDraw",chips:"sceneChips",countEl:"sceneCount",
+    cats:SCENE_CATS.map(function(n){return {label:n,value:n==="全部"?null:n}}),
+    match:function(x,f){return !f||x.c===f},
+    render:function(x){
+      var q=FOLLOW[Math.floor(Math.random()*FOLLOW.length)];
+      return '<span class="tag">'+x.c+'</span><div class="text">'+x.t+'</div><div class="ask">想一想：'+q+'</div>';
+    }
+  });
+
+  makeDeck({
+    all:SENTS,stage:"sentStage",btn:"sentDraw",chips:"sentChips",countEl:"sentCount",
+    cats:SENT_CATS.map(function(c){return {label:c.n,value:c.k}}),
+    match:function(x,f){return !f||x.l===f},
+    render:function(x){
+      var name=["","輕鬆暖身","一般","比較深入"][x.l];
+      return '<span class="tag">'+name+'</span><div class="text">'+x.t+'</div><div class="ask">想說多少都可以，不想說就按「抽一張」換一張。</div>';
+    }
+  });
+
+  /* ===== 價值觀排序 ===== */
+  var picked=[];
+  var grid=$("valGrid");
+  VALUES.forEach(function(v,i){
+    var b=document.createElement("button");
+    b.className="vcard";
+    b.innerHTML=v[0]+'<small>'+v[1]+'</small><span class="no"></span>';
+    b.addEventListener("click",function(){
+      var at=picked.indexOf(i);
+      if(at>-1){picked.splice(at,1)}
+      else if(picked.length<5){picked.push(i)}
+      else{return}
+      refreshValues();
+    });
+    grid.appendChild(b);
+  });
+  function refreshValues(){
+    var cards=grid.children;
+    for(var i=0;i<cards.length;i++){
+      var at=picked.indexOf(i);
+      cards[i].classList.toggle("sel",at>-1);
+      cards[i].querySelector(".no").textContent=at>-1?at+1:"";
+    }
+    $("valNum").textContent="已選 "+picked.length+" / 5";
+    var r=$("valResult");
+    if(picked.length===5){
+      $("valList").innerHTML=picked.map(function(i){return "<li>"+VALUES[i][0]+"</li>"}).join("");
+      r.classList.add("show");
+      r.scrollIntoView({behavior:"smooth",block:"nearest"});
+    }else{
+      r.classList.remove("show");
+    }
+  }
+  $("valReset").addEventListener("click",function(){picked=[];refreshValues()});
+})();
+</script>
+</body>
+</html>
